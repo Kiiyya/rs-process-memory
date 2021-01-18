@@ -1,5 +1,5 @@
-use winapi::shared::minwindef;
 use winapi::um::{handleapi::CloseHandle, tlhelp32};
+use winapi::{shared::minwindef, um::handleapi::INVALID_HANDLE_VALUE};
 
 use std::os::windows::io::AsRawHandle;
 use std::process::Child;
@@ -29,6 +29,33 @@ impl ProcessHandleExt for ProcessHandle {
     }
 }
 
+/// Defaults to native, unless it can detect that the process under `handle` is running under
+/// WOW64 (Microsoft speek for running 32-bit stuff on 64-bit stuff).
+fn try_detect_arch(handle: winapi::um::winnt::HANDLE) -> std::io::Result<Architecture> {
+    #[allow(unused_assignments)]
+    let mut arch = Architecture::from_native();
+
+    #[cfg(target_pointer_width = "64")]
+    {
+        let mut is_wow64 = 123456_i32;
+
+        if unsafe { winapi::um::wow64apiset::IsWow64Process(handle, &mut is_wow64) } == 0 {
+            return Err(std::io::Error::last_os_error());
+        }
+
+        // host=32, guest=32: FALSE
+        // host=64, guest=32: TRUE
+        // host=64, guest=64: FALSE
+        if is_wow64 == minwindef::TRUE {
+            arch = Architecture::Arch32Bit;
+        } else {
+            arch = Architecture::Arch64Bit;
+        }
+    }
+
+    Ok(arch)
+}
+
 /// A `Pid` can be turned into a `ProcessHandle` with `OpenProcess`.
 impl TryIntoProcessHandle for minwindef::DWORD {
     fn try_into_process_handle(&self) -> std::io::Result<ProcessHandle> {
@@ -43,18 +70,20 @@ impl TryIntoProcessHandle for minwindef::DWORD {
                 *self,
             )
         };
-        if handle == (0 as winapi::um::winnt::HANDLE) {
-            Err(std::io::Error::last_os_error())
-        } else {
-            Ok((handle, Architecture::from_native()))
+
+        if handle == INVALID_HANDLE_VALUE {
+            return Err(std::io::Error::last_os_error());
         }
+
+        Ok((handle, try_detect_arch(handle)?))
     }
 }
 
 /// A `std::process::Child` has a `HANDLE` from calling `CreateProcess`.
 impl TryIntoProcessHandle for Child {
     fn try_into_process_handle(&self) -> std::io::Result<ProcessHandle> {
-        Ok((self.as_raw_handle() as _, Architecture::from_native()))
+        let handle = self.as_raw_handle() as _;
+        Ok((handle, try_detect_arch(handle)?))
     }
 }
 

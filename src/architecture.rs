@@ -13,6 +13,7 @@ pub enum Architecture {
         target_pointer_width = "128"
     ))]
     Arch8Bit = 1,
+
     /// 16-bit architecture
     #[cfg(any(
         target_pointer_width = "16",
@@ -21,6 +22,7 @@ pub enum Architecture {
         target_pointer_width = "128"
     ))]
     Arch16Bit = 2,
+
     /// 32-bit architecture
     #[cfg(any(
         target_pointer_width = "32",
@@ -28,9 +30,11 @@ pub enum Architecture {
         target_pointer_width = "128"
     ))]
     Arch32Bit = 4,
+
     /// 64-bit architecture
     #[cfg(any(target_pointer_width = "64", target_pointer_width = "128"))]
     Arch64Bit = 8,
+
     /// 128-bit architecture
     #[cfg(target_pointer_width = "128")]
     Arch128Bit = 16,
