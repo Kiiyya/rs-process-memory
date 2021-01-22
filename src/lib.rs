@@ -155,6 +155,15 @@ pub use platform::Pid;
 /// [`Pid`]: type.Pid.html
 pub use platform::ProcessHandle;
 
+/// Attempt to detect the architecture of a process (e.g. whether it's 32bit or 64bit).
+pub trait TryDetectArch {
+    /// Attempt to detect the architecture of a process (e.g. whether it's 32bit or 64bit).
+    /// # Errors
+    /// Returns an `std::io::Error` with `Other` `ErrorKind` when detecting architecture of
+    /// the other process is not possible or not yet implemented.
+    fn try_detect_arch(self) -> std::io::Result<Architecture>;
+}
+
 /// A trait that attempts to turn some type into a [`ProcessHandle`] so memory can be either copied
 /// or placed into it.
 ///
