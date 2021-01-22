@@ -7,7 +7,7 @@ use std::ptr;
 
 use super::{
     Architecture, CopyAddress, GetLibraryInfo, LibraryInfo, ProcessHandleExt, ProcessInfo,
-    PutAddress, TryIntoProcessHandle, TryDetectArch,
+    PutAddress, TryDetectArch, TryIntoProcessHandle,
 };
 
 /// On Windows a `Pid` is a `DWORD`.
