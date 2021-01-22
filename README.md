@@ -5,10 +5,10 @@
 
 This crate is loosely based on [`read-process-memory`](https://github.com/luser/read-process-memory) by luser, but has been extended to be able to write to process memory as well.
 
-The current supported platforms are:
- - Windows
- - OSX
- - Linux
+Feature Matrix:
+|                                           | Windows                        | Linux              | macOS              |
+|-------------------------------------------|--------------------------------|--------------------|--------------------|
+|Target process architecture auto-detection | x86, x64: yes. ARM etc: Error | No: Assumes native | No: Assumes native |
 
 ## Examples
 ```rust
